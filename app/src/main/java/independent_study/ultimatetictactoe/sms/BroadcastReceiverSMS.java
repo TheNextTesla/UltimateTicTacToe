@@ -30,7 +30,7 @@ public class BroadcastReceiverSMS extends BroadcastReceiver
         return broadcastReceiverSMS;
     }
 
-    private BroadcastReceiverSMS()
+    public BroadcastReceiverSMS()
     {
         broadcastReceiverSMS = this;
     }
