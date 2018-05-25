@@ -45,8 +45,6 @@ public class TicTacToeView extends View
 
     private boolean isMagnified;
 
-    private int tick = 0;
-
     public TicTacToeView(Context context)
     {
         super(context);
@@ -59,9 +57,7 @@ public class TicTacToeView extends View
         blueBoxPaint = new Paint();
         blueBoxPaint.setColor(Color.BLUE);
 
-        board = new UltimateTickTacToeBoard();
-        //color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
-        color = UltimateTickTacToeBoard.BOARD_STATE.BLUE;
+        color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
         isMagnified = false;
     }
 
@@ -77,9 +73,7 @@ public class TicTacToeView extends View
         blueBoxPaint = new Paint();
         blueBoxPaint.setColor(Color.BLUE);
 
-        board = new UltimateTickTacToeBoard();
-        //color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
-        color = UltimateTickTacToeBoard.BOARD_STATE.BLUE;
+        color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
         isMagnified = false;
     }
 
@@ -107,7 +101,10 @@ public class TicTacToeView extends View
                 LINE_3_2.x * contentWidth, LINE_3_2.y * contentHeight, linePaint);
         canvas.drawLine(LINE_4_1.x * contentWidth, LINE_4_1.y * contentHeight,
                 LINE_4_2.x * contentWidth, LINE_4_2.y * contentHeight, linePaint);
-        
+
+        if(board == null)
+            return;
+
         if(isMagnified)
         {
             for(int i = 0; i < magnifiedLocationRects.length; i++)
@@ -141,8 +138,6 @@ public class TicTacToeView extends View
                 }
             }
         }
-        //canvas.drawRect(locationRects[tick / 9][tick % 9], blueBoxPaint);
-        //tick++;
     }
 
     @Override
@@ -220,15 +215,13 @@ public class TicTacToeView extends View
         }
 
         magnifiedLocationRects = new RectF[9];
-        multiplier = 1.0 / 3.0;
 
         for(int i = 0; i < 3; i++)
         {
             for(int j = 0; j < 3; j++)
             {
-                magnifiedLocationRects[i * 3 + j] = new RectF(f(i * multiplier) * getWidth(), f(j * multiplier) * getHeight(),
-                        f((i + 1) * multiplier) * getWidth(), f((j + 1) * multiplier) * getHeight());
-                //magnifiedLocationRects[i * 3 + j].sort();
+                magnifiedLocationRects[i * 3 + j] = new RectF(f(i * blockMultiplier) * getWidth(), f(j * blockMultiplier) * getHeight(),
+                        f((i + 1) * blockMultiplier) * getWidth(), f((j + 1) * blockMultiplier) * getHeight());
             }
         }
     }

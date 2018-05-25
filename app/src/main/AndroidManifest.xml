@@ -15,11 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity android:name=".gui.GameActivity">
-
-        </activity>
-
+        <activity android:name=".gui.GameActivity"></activity>
         <activity android:name=".gui.GameListActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,7 +29,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".sms.BroadcastReceiverSMS"
             android:exported="true"
@@ -47,6 +42,8 @@
             android:name=".util.GameBackgroundService"
             android:enabled="true"
             android:exported="true" />
+
+        <activity android:name=".gui.GameCreateActivity"></activity>
     </application>
 
 </manifest>

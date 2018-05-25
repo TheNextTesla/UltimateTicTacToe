@@ -81,6 +81,8 @@ public class GameBackgroundService extends Service implements ListenerSMS
                         .setContentIntent(specificPendingIntent)
                         .build();
 
+                instantNotification.flags |= Notification.FLAG_AUTO_CANCEL;
+
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
                 notificationManager.notify(QUICK_NOTIFICATION_ID, instantNotification);
             }

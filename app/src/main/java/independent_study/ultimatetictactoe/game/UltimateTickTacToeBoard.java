@@ -1,7 +1,14 @@
 package independent_study.ultimatetictactoe.game;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class UltimateTickTacToeBoard
 {
+    private static final String BASE_BOOL_STRING_BLUE = "bB";
+    private static final String BASE_BOOL_STRING_RED = "bR";;
+    private static final String BASE_PHONE_NUMBER = "p";
+
     public enum BOARD_STATE {RED, BLUE, NONE}
     public enum BOARD_LOCATION
     {
@@ -29,9 +36,11 @@ public class UltimateTickTacToeBoard
     }
 
     protected BOARD_STATE[][] boardStates;
+    protected long phoneNumber;
 
-    public UltimateTickTacToeBoard()
+    public UltimateTickTacToeBoard(long phoneNumber)
     {
+        this.phoneNumber = phoneNumber;
         boardStates = new BOARD_STATE[9][9];
         for(int i = 0; i < boardStates.length; i++)
         {
@@ -42,9 +51,9 @@ public class UltimateTickTacToeBoard
         }
     }
 
-    public UltimateTickTacToeBoard(boolean[][] isRed, boolean[][] isBlue)
+    public UltimateTickTacToeBoard(boolean[][] isRed, boolean[][] isBlue, long phoneNumber)
     {
-        this();
+        this(phoneNumber);
 
         for(int i = 0 ; i < isRed.length && i < boardStates.length; i++)
         {
@@ -68,5 +77,90 @@ public class UltimateTickTacToeBoard
     public BOARD_STATE[][] getBoardStates()
     {
         return boardStates;
+    }
+
+    public long getPhoneNumber()
+    {
+        return phoneNumber;
+    }
+
+    public boolean[][] getRedBooleanArray()
+    {
+        boolean[][] redArray = new boolean[9][9];
+        for(int i = 0; i < boardStates.length; i++)
+        {
+            for(int j = 0; j < boardStates[0].length; j++)
+            {
+                redArray[i][j] = (boardStates[i][j] == BOARD_STATE.RED);
+            }
+        }
+        return redArray;
+    }
+
+    public boolean[][] getBlueBooleanArray()
+    {
+        boolean[][] blueArray = new boolean[9][9];
+        for(int i = 0; i < boardStates.length; i++)
+        {
+            for(int j = 0; j < boardStates[0].length; j++)
+            {
+                blueArray[i][j] = (boardStates[i][j] == BOARD_STATE.BLUE);
+            }
+        }
+        return blueArray;
+    }
+
+    public static UltimateTickTacToeBoard fromString(String string)
+    {
+        try
+        {
+            JSONObject json = new JSONObject(string);
+            boolean[][] redArray = new boolean[9][9];
+            boolean[][] blueArray = new boolean[9][9];
+
+            for(int i = 0; i < 9; i++)
+            {
+                for(int j = 0; j < 9; j++)
+                {
+                    redArray[i][j] = json.getBoolean(BASE_BOOL_STRING_RED + (i * redArray.length + j));
+                    blueArray[i][j] = json.getBoolean(BASE_BOOL_STRING_BLUE + (i * redArray.length + j));
+                }
+            }
+
+            long phone = json.getLong(BASE_PHONE_NUMBER);
+
+            return new UltimateTickTacToeBoard(redArray, blueArray, phone);
+        }
+        catch (JSONException jsonex)
+        {
+            jsonex.printStackTrace();
+            return null;
+        }
+    }
+
+    public String toString()
+    {
+        JSONObject json = new JSONObject();
+
+        try
+        {
+            boolean[][] redArray = getRedBooleanArray();
+            boolean[][] blueArray = getBlueBooleanArray();
+            for (int i = 0; i < redArray.length; i++)
+            {
+                for (int j = 0; j < redArray[0].length; j++)
+                {
+                    json.put(BASE_BOOL_STRING_RED + (i * redArray.length + j), redArray[i][j]);
+                    json.put(BASE_BOOL_STRING_BLUE + (i * redArray.length + j), blueArray[i][j]);
+                }
+            }
+            json.put(BASE_PHONE_NUMBER, phoneNumber);
+        }
+        catch (JSONException jsonex)
+        {
+            jsonex.printStackTrace();
+        }
+
+        return json.toString();
     }
 }
