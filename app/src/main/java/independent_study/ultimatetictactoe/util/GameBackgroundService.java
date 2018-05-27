@@ -4,13 +4,16 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.SmsMessage;
 
 import independent_study.ultimatetictactoe.R;
 import independent_study.ultimatetictactoe.game.GameMessage;
+import independent_study.ultimatetictactoe.game.UltimateTickTacToeBoard;
 import independent_study.ultimatetictactoe.gui.GameActivity;
+import independent_study.ultimatetictactoe.gui.GameListActivity;
 import independent_study.ultimatetictactoe.sms.BroadcastReceiverSMS;
 import independent_study.ultimatetictactoe.sms.ListenerSMS;
 
@@ -58,6 +61,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
         {
             String messageContents = message.getMessageBody();
             String recipient = message.getOriginatingAddress();
+            long phoneNumber = Long.parseLong(recipient);
 
             if(GameMessage.isGameMessage(messageContents))
             {
@@ -68,9 +72,11 @@ public class GameBackgroundService extends Service implements ListenerSMS
                     instantNotification = null;
                 }
 
-                Intent specificIntent = new Intent(this, GameActivity.class);
-                specificIntent.putExtra("Contents", messageContents);
-                specificIntent.putExtra("Recipient", recipient);
+                GameMessage gameMessage = new GameMessage(messageContents, phoneNumber);
+                UltimateTickTacToeBoard board = gameMessage.getBoard();
+
+                Intent specificIntent = new Intent(this, GameListActivity.class);
+                specificIntent.putExtra(GameActivity.BOARD_TAG, board.toString());
                 PendingIntent specificPendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, specificIntent, 0);
 
                 instantNotification = new Notification.Builder(this.getApplicationContext())
@@ -110,6 +116,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
     @Override
     public void onDestroy()
     {
+        receiverSMS.removeListener(this);
         super.onDestroy();
     }
 }
