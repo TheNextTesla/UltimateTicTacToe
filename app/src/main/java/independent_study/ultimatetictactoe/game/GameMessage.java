@@ -37,7 +37,7 @@ public class GameMessage
     {
         StringBuilder builder = new StringBuilder();
         builder.append(MESSAGE_HEADER);
-        BitSet bitSet = new BitSet(18 * 9);
+        BitSet bitSet = new BitSet(18 * 9 + 1);
         for(int i = 0; i < bitSet.length(); i++)
         {
             if(i < 81)
@@ -45,6 +45,7 @@ public class GameMessage
             else
                 bitSet.set(i, isBlue[(i-81) / 9][i % 9]);
         }
+        bitSet.set(18 * 9, true);
         String base64 = Base64.encodeToString(bitSet.toByteArray(), Base64.NO_WRAP);
         builder.append(base64);
         return builder.toString();

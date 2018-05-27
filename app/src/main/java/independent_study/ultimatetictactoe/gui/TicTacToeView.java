@@ -41,9 +41,11 @@ public class TicTacToeView extends View
 
     private UltimateTickTacToeBoard board;
     private UltimateTickTacToeBoard.BOARD_LOCATION magnifiedLocation;
+    private UltimateTickTacToeBoard.BOARD_LOCATION subMagnifiedLocation;
     private UltimateTickTacToeBoard.BOARD_STATE color;
 
     private boolean isMagnified;
+    private boolean hasBeenSelected;
 
     public TicTacToeView(Context context)
     {
@@ -179,12 +181,10 @@ public class TicTacToeView extends View
             if(isMagnified)
             {
                 selectBoardPieces(touch_type);
-                isMagnified = false;
             }
             else
             {
                 selectBoardRegion(touch_type);
-                isMagnified = true;
             }
             invalidate();
             return true;
@@ -226,14 +226,37 @@ public class TicTacToeView extends View
         }
     }
 
+    public void resetBoardToOriginal(UltimateTickTacToeBoard originalBoard)
+    {
+        setBoard(originalBoard);
+        isMagnified = false;
+        hasBeenSelected = false;
+    }
+
     private void selectBoardRegion(UltimateTickTacToeBoard.BOARD_LOCATION location)
     {
-        magnifiedLocation = location;
+        if(!hasBeenSelected)
+        {
+            magnifiedLocation = location;
+            isMagnified = true;
+        }
     }
 
     private void selectBoardPieces(UltimateTickTacToeBoard.BOARD_LOCATION location)
     {
-        board.getBoardStates()[magnifiedLocation.getNum()][location.getNum()] = color;
+        if(!hasBeenSelected)
+        {
+            subMagnifiedLocation = location;
+            board.getBoardStates()[magnifiedLocation.getNum()][location.getNum()] = color;
+            hasBeenSelected = true;
+            isMagnified = false;
+        }
+    }
+
+    public boolean isValidPieceChoosen()
+    {
+        //TODO: Add Actual Game Logic Here
+        return !isMagnified && hasBeenSelected;
     }
 
     public void setColor(UltimateTickTacToeBoard.BOARD_STATE color)

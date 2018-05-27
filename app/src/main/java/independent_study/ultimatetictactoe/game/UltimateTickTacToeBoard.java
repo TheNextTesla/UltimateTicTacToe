@@ -3,7 +3,7 @@ package independent_study.ultimatetictactoe.game;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class UltimateTickTacToeBoard
+public class UltimateTickTacToeBoard implements Cloneable
 {
     private static final String BASE_BOOL_STRING_BLUE = "bB";
     private static final String BASE_BOOL_STRING_RED = "bR";;
@@ -162,5 +162,29 @@ public class UltimateTickTacToeBoard
         }
 
         return json.toString();
+    }
+
+    @Override
+    public Object clone()
+    {
+        try
+        {
+            UltimateTickTacToeBoard board = (UltimateTickTacToeBoard) super.clone();
+            board.phoneNumber = this.phoneNumber;
+            board.boardStates = new BOARD_STATE[9][9];
+            for(int i = 0; i < board.boardStates.length; i++)
+            {
+                for(int j = 0; j < board.boardStates[0].length; j++)
+                {
+                    board.boardStates[i][j] = this.boardStates[i][j];
+                }
+            }
+            return board;
+        }
+        catch (CloneNotSupportedException cnse)
+        {
+            cnse.printStackTrace();
+            return null;
+        }
     }
 }
