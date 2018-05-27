@@ -1,9 +1,13 @@
 package independent_study.ultimatetictactoe.gui;
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,24 +25,24 @@ import java.util.Locale;
 
 import independent_study.ultimatetictactoe.R;
 import independent_study.ultimatetictactoe.game.UltimateTickTacToeBoard;
+import independent_study.ultimatetictactoe.sms.BroadcastReceiverSMS;
 import independent_study.ultimatetictactoe.sms.ListenerSMS;
 import independent_study.ultimatetictactoe.util.GameBackgroundService;
 
 import static independent_study.ultimatetictactoe.gui.GameActivity.BOARD_TAG;
 
-public class GameListActivity extends AppCompatActivity implements ListenerSMS
+public class GameListActivity extends AppCompatActivity
 {
-    public static final String PREFERENCES_KEY = "gameStore";
     private static final int PERMISSIONS_KEY = 34809;
     private static final String LOG_TAG = "GameListActivity";
-    private static final String BASE_STORAGE_STRING = "Game";
 
     private ListView listView;
     private FloatingActionButton fab;
     private ArrayAdapter<String> arrayAdapter;
 
-    private ArrayList<UltimateTickTacToeBoard> boards;
-    private SharedPreferences sharedPreferences;
+    private GameBackgroundService gameService;
+    private ServiceConnection serviceConnection;
+    private boolean isBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -46,27 +50,25 @@ public class GameListActivity extends AppCompatActivity implements ListenerSMS
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_list);
 
-        sharedPreferences = getSharedPreferences(PREFERENCES_KEY, MODE_PRIVATE);
+
         listView = findViewById(R.id.listViewList);
         fab = findViewById(R.id.floatingActionButtonList);
         arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, android.R.id.text1);
-        boards = new ArrayList<>();
+        isBound = false;
 
-        Log.d(LOG_TAG, "1");
         checkAndCallPermissions();
-        Log.d(LOG_TAG, "1");
-        loadSavedGames();
-        Log.d(LOG_TAG, "1");
+        //loadSavedGames();
 
+        /*
         Bundle gameSetup = getIntent().getExtras();
-        Log.d(LOG_TAG, "1");
         if(gameSetup != null && !gameSetup.isEmpty())
         {
             String boardSerial = gameSetup.getString(BOARD_TAG);
             boards.add(UltimateTickTacToeBoard.fromString(boardSerial));
             saveLocalGames();
+            loadSavedGames();
         }
-        Log.d(LOG_TAG, "1");
+        */
 
         Intent serviceIntent = new Intent(getApplicationContext(), GameBackgroundService.class);
         getApplication().startService(serviceIntent);
@@ -78,7 +80,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerSMS
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
             {
                 Intent gameIntent = new Intent(getApplicationContext(), GameActivity.class);
-                gameIntent.putExtra(GameActivity.BOARD_TAG, boards.get(i).toString());
+                gameIntent.putExtra(GameActivity.BOARD_TAG, gameService.getBoards().get(i).toString());
                 startActivity(gameIntent);
             }
         });
@@ -95,11 +97,36 @@ public class GameListActivity extends AppCompatActivity implements ListenerSMS
     }
 
     @Override
+    protected void onStart()
+    {
+        super.onStart();
+        serviceConnection = new ServiceConnection()
+        {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+            {
+                GameBackgroundService.GameBackgroundBinder binder = (GameBackgroundService.GameBackgroundBinder) iBinder;
+                gameService = binder.getService();
+
+                isBound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName)
+            {
+                isBound = false;
+            }
+        };
+        Intent intent = new Intent(this, GameBackgroundService.class);
+        bindService(intent, serviceConnection, Context.BIND_ABOVE_CLIENT);
+    }
+
+    @Override
     protected void onResume()
     {
         super.onResume();
         checkAndCallPermissions();
-        loadSavedGames();
+        //loadSavedGames();
     }
 
     @Override
@@ -112,68 +139,6 @@ public class GameListActivity extends AppCompatActivity implements ListenerSMS
     protected void onStop()
     {
         super.onStop();
-    }
-
-    @Override
-    public void onSMSReceived(SmsMessage message)
-    {
-        loadSavedGames();
-    }
-
-    private void loadSavedGames()
-    {
-        int index = 0;
-        boards.clear();
-
-        try
-        {
-            boolean shouldStop = false;
-            while (sharedPreferences.contains(BASE_STORAGE_STRING + index) && !shouldStop)
-            {
-                Log.d(LOG_TAG, "1");
-                String storedString = sharedPreferences.getString(BASE_STORAGE_STRING + index, "");
-                if(!storedString.equals(""))
-                {
-                    Log.d(LOG_TAG, storedString);
-                    boards.add(UltimateTickTacToeBoard.fromString(storedString));
-                    Log.d(LOG_TAG, "2");
-                }
-                else
-                {
-                    shouldStop = true;
-                }
-                index++;
-            }
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
-
-        ArrayList<String> boardStrings = new ArrayList<>();
-        for(int i = 0; i < boards.size(); i++)
-        {
-            boardStrings.add(String.format(Locale.US, "Game %d Against %d", i, boards.get(i).getPhoneNumber()));
-        }
-        arrayAdapter.clear();
-        arrayAdapter.addAll(boardStrings);
-    }
-
-    private void saveLocalGames()
-    {
-        try
-        {
-            SharedPreferences.Editor edit = sharedPreferences.edit();
-            for(int i = 0; i < boards.size(); i++)
-            {
-                edit.putString(BASE_STORAGE_STRING + i, boards.get(i).toString());
-            }
-            edit.commit();
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
-        }
     }
 
     private boolean checkAndCallPermissions()
