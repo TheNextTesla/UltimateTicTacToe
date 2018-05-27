@@ -61,7 +61,7 @@ public class BroadcastReceiverSMS extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        Log.e(LOG_TAG, "onReceive");
+        Log.d(LOG_TAG, "onReceive");
         Bundle intentExtras = intent.getExtras();
         if (intentExtras != null)
         {

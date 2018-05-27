@@ -12,6 +12,7 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import independent_study.ultimatetictactoe.R;
@@ -29,6 +30,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
     private static final int ONGOING_NOTIFICATION_ID = 23;
     private static final int QUICK_NOTIFICATION_ID = 32;
     private static final String LOG_TAG = "GameBackgroundService";
+    public static volatile boolean serviceStarted;
 
     private GameBackgroundBinder binder;
     private BroadcastReceiverSMS receiverSMS;
@@ -36,6 +38,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
     private Notification instantNotification;
 
     private final ArrayList<UltimateTickTacToeBoard> boards = new ArrayList<>();
+    private final ArrayList<ListenerGameUpdate> listeners = new ArrayList<>();
     private SharedPreferences sharedPreferences;
 
     public class GameBackgroundBinder extends Binder
@@ -50,6 +53,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
     public void onCreate()
     {
         super.onCreate();
+        serviceStarted = true;
 
         binder = new GameBackgroundBinder();
         Intent directIntent = new Intent(this, GameActivity.class);
@@ -65,6 +69,9 @@ public class GameBackgroundService extends Service implements ListenerSMS
                 .setContentIntent(pendingIntent)
                 .build();
 
+        loadSavedGames();
+        Log.d(LOG_TAG, "onCreate");
+
         startForeground(ONGOING_NOTIFICATION_ID, persistentNotification);
     }
 
@@ -72,7 +79,6 @@ public class GameBackgroundService extends Service implements ListenerSMS
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         super.onStartCommand(intent, flags, startId);
-        loadSavedGames();
         receiverSMS = BroadcastReceiverSMS.getInstance();
         receiverSMS.addListener(this);
         return Service.START_STICKY;
@@ -99,9 +105,9 @@ public class GameBackgroundService extends Service implements ListenerSMS
                 GameMessage gameMessage = new GameMessage(messageContents, phoneNumber);
                 UltimateTickTacToeBoard board = gameMessage.getBoard();
                 addBoard(board);
+                saveLocalGames();
 
                 Intent specificIntent = new Intent(this, GameListActivity.class);
-                //specificIntent.putExtra(GameActivity.BOARD_TAG, board.toString());
                 PendingIntent specificPendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, specificIntent, 0);
 
                 instantNotification = new Notification.Builder(this.getApplicationContext())
@@ -142,6 +148,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
     public void onDestroy()
     {
         receiverSMS.removeListener(this);
+        removeAllListeners();
         saveLocalGames();
         super.onDestroy();
     }
@@ -179,6 +186,14 @@ public class GameBackgroundService extends Service implements ListenerSMS
         try
         {
             SharedPreferences.Editor edit = sharedPreferences.edit();
+
+            int index = 0;
+            while (sharedPreferences.contains(BASE_STORAGE_STRING + index))
+            {
+                edit.remove(BASE_STORAGE_STRING + index);
+                index++;
+            }
+
             synchronized (boards)
             {
                 for(int i = 0; i < boards.size(); i++)
@@ -205,6 +220,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
         {
             boards.add(tickTacToeBoard);
         }
+        callListeners();
     }
 
     public void removeBoard(UltimateTickTacToeBoard tickTacToeBoard)
@@ -213,6 +229,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
         {
             boards.remove(tickTacToeBoard);
         }
+        callListeners();
     }
 
     public ArrayList<UltimateTickTacToeBoard> getBoardsCopy()
@@ -220,6 +237,49 @@ public class GameBackgroundService extends Service implements ListenerSMS
         synchronized(boards)
         {
             return new ArrayList<>(boards);
+        }
+    }
+
+    public boolean addListener(ListenerGameUpdate listenerGame)
+    {
+        synchronized (listeners)
+        {
+            for (ListenerGameUpdate listener : listeners)
+            {
+                if (listener == listenerGame)
+                    return false;
+            }
+            listeners.add(listenerGame);
+            Log.d(LOG_TAG, "Listeners: " + listeners.size());
+            return true;
+        }
+    }
+
+    public boolean removeListener(ListenerGameUpdate listenerGameUpdate)
+    {
+        synchronized (listeners)
+        {
+            return listeners.remove(listenerGameUpdate);
+        }
+    }
+
+    public void removeAllListeners()
+    {
+        synchronized (listeners)
+        {
+            listeners.clear();
+        }
+    }
+
+    public void callListeners()
+    {
+        ArrayList<UltimateTickTacToeBoard> updatedBoards = getBoardsCopy();
+        synchronized (listeners)
+        {
+            for(ListenerGameUpdate gameListeners : listeners)
+            {
+                gameListeners.onGameUpdate(updatedBoards);
+            }
         }
     }
 }

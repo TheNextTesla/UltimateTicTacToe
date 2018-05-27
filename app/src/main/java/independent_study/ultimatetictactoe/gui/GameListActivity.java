@@ -20,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -28,10 +29,11 @@ import independent_study.ultimatetictactoe.game.UltimateTickTacToeBoard;
 import independent_study.ultimatetictactoe.sms.BroadcastReceiverSMS;
 import independent_study.ultimatetictactoe.sms.ListenerSMS;
 import independent_study.ultimatetictactoe.util.GameBackgroundService;
+import independent_study.ultimatetictactoe.util.ListenerGameUpdate;
 
 import static independent_study.ultimatetictactoe.gui.GameActivity.BOARD_TAG;
 
-public class GameListActivity extends AppCompatActivity
+public class GameListActivity extends AppCompatActivity implements ListenerGameUpdate
 {
     private static final int PERMISSIONS_KEY = 34809;
     private static final String LOG_TAG = "GameListActivity";
@@ -40,6 +42,7 @@ public class GameListActivity extends AppCompatActivity
     private FloatingActionButton fab;
     private ArrayAdapter<String> arrayAdapter;
 
+    private GameListActivity gameListActivity;
     private GameBackgroundService gameService;
     private ServiceConnection serviceConnection;
     private boolean isBound;
@@ -50,28 +53,19 @@ public class GameListActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_list);
 
-
+        gameListActivity = this;
         listView = findViewById(R.id.listViewList);
         fab = findViewById(R.id.floatingActionButtonList);
         arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, android.R.id.text1);
         isBound = false;
 
         checkAndCallPermissions();
-        //loadSavedGames();
 
-        /*
-        Bundle gameSetup = getIntent().getExtras();
-        if(gameSetup != null && !gameSetup.isEmpty())
+        if (!GameBackgroundService.serviceStarted)
         {
-            String boardSerial = gameSetup.getString(BOARD_TAG);
-            boards.add(UltimateTickTacToeBoard.fromString(boardSerial));
-            saveLocalGames();
-            loadSavedGames();
+            Intent serviceIntent = new Intent(getApplicationContext(), GameBackgroundService.class);
+            getApplication().startService(serviceIntent);
         }
-        */
-
-        Intent serviceIntent = new Intent(getApplicationContext(), GameBackgroundService.class);
-        getApplication().startService(serviceIntent);
 
         listView.setAdapter(arrayAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -100,23 +94,29 @@ public class GameListActivity extends AppCompatActivity
     protected void onStart()
     {
         super.onStart();
-        serviceConnection = new ServiceConnection()
+
+        if(serviceConnection == null)
         {
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+            serviceConnection = new ServiceConnection()
             {
-                GameBackgroundService.GameBackgroundBinder binder = (GameBackgroundService.GameBackgroundBinder) iBinder;
-                gameService = binder.getService();
+                @Override
+                public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+                {
+                    GameBackgroundService.GameBackgroundBinder binder = (GameBackgroundService.GameBackgroundBinder) iBinder;
+                    gameService = binder.getService();
+                    gameService.addListener(gameListActivity);
+                    isBound = true;
+                    onGameUpdate(gameService.getBoardsCopy());
+                    Log.d(LOG_TAG, "Service Bound!");
+                }
 
-                isBound = true;
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName componentName)
-            {
-                isBound = false;
-            }
-        };
+                @Override
+                public void onServiceDisconnected(ComponentName componentName)
+                {
+                    isBound = false;
+                }
+            };
+        }
         Intent intent = new Intent(this, GameBackgroundService.class);
         bindService(intent, serviceConnection, Context.BIND_ABOVE_CLIENT);
     }
@@ -126,7 +126,6 @@ public class GameListActivity extends AppCompatActivity
     {
         super.onResume();
         checkAndCallPermissions();
-        //loadSavedGames();
     }
 
     @Override
@@ -139,6 +138,23 @@ public class GameListActivity extends AppCompatActivity
     protected void onStop()
     {
         super.onStop();
+        if(isBound)
+        {
+            gameService.removeListener(this);
+            unbindService(serviceConnection);
+        }
+    }
+
+    @Override
+    public void onGameUpdate(ArrayList<UltimateTickTacToeBoard> boards)
+    {
+        ArrayList<String> listOutput = new ArrayList<>();
+        for(int i = 0; i < boards.size(); i++)
+        {
+            listOutput.add(String.format(Locale.US, "Game %d Against %d", i, boards.get(i).getPhoneNumber()));
+        }
+        arrayAdapter.clear();
+        arrayAdapter.addAll(listOutput);
     }
 
     private boolean checkAndCallPermissions()
