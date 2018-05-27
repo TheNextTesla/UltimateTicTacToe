@@ -55,18 +55,18 @@ public class UltimateTickTacToeBoard implements Cloneable
     {
         this(phoneNumber);
 
-        for(int i = 0 ; i < isRed.length && i < boardStates.length; i++)
+        for(int i = 0; i < isRed.length && i < boardStates.length; i++)
         {
-            for(int j = 0; j < isRed[0].length && i < boardStates[0].length; j++)
+            for(int j = 0; j < isRed[0].length && j < boardStates[0].length; j++)
             {
                 if(isRed[i][j])
                     boardStates[i][j] = BOARD_STATE.RED;
             }
         }
 
-        for(int i = 0 ; i < isBlue.length && i < boardStates.length; i++)
+        for(int i = 0; i < isBlue.length && i < boardStates.length; i++)
         {
-            for(int j = 0; j < isBlue[0].length && i < boardStates[0].length; j++)
+            for(int j = 0; j < isBlue[0].length && j < boardStates[0].length; j++)
             {
                 if(isBlue[i][j])
                     boardStates[i][j] = BOARD_STATE.BLUE;

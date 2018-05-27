@@ -61,6 +61,7 @@ public class TicTacToeView extends View
 
         color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
         isMagnified = false;
+        hasBeenSelected = false;
     }
 
     public TicTacToeView(Context context, AttributeSet attrs)
@@ -77,6 +78,7 @@ public class TicTacToeView extends View
 
         color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
         isMagnified = false;
+        hasBeenSelected = false;
     }
 
     @Override

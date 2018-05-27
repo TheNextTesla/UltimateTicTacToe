@@ -18,6 +18,7 @@ import independent_study.ultimatetictactoe.sms.TransmitterSMS;
 public class GameActivity extends AppCompatActivity
 {
     public static final String BOARD_TAG = "Board";
+    private static final String LOG_TAG = "GameActivity";
 
     private GameActivity gameActivity;
     private TicTacToeView ticTacToeView;
@@ -35,7 +36,7 @@ public class GameActivity extends AppCompatActivity
         gameActivity = this;
 
         Bundle gameSetup = getIntent().getExtras();
-        String boardSerial = gameSetup.getString(BOARD_TAG);
+        final String boardSerial = gameSetup.getString(BOARD_TAG);
         board = UltimateTickTacToeBoard.fromString(boardSerial);
         boardCopy = (UltimateTickTacToeBoard) board.clone();
         number = board.getPhoneNumber();
@@ -55,7 +56,16 @@ public class GameActivity extends AppCompatActivity
             {
                 if(ticTacToeView.isValidPieceChoosen())
                 {
+                    Log.d(LOG_TAG, board.toString());
+                    for(int i = 0; i < 81; i++)
+                    {
+                        if(board.getBoardStates()[i / 9][i % 9] == UltimateTickTacToeBoard.BOARD_STATE.RED)
+                        {
+                            Log.d(LOG_TAG, "Red Found !");
+                        }
+                    }
                     GameMessage gameMessage = new GameMessage(board);
+                    Log.d(LOG_TAG, gameMessage.getMessage());
                     TransmitterSMS.getInstance().sendSMS(gameMessage.getPhoneNumber(), gameMessage.getMessage(), gameActivity);
                     AlertDialog.Builder builder;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)

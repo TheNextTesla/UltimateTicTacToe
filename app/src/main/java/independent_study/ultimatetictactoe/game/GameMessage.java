@@ -1,6 +1,7 @@
 package independent_study.ultimatetictactoe.game;
 
 import android.util.Base64;
+import android.util.Log;
 
 import java.util.BitSet;
 
@@ -38,14 +39,14 @@ public class GameMessage
         StringBuilder builder = new StringBuilder();
         builder.append(MESSAGE_HEADER);
         BitSet bitSet = new BitSet(18 * 9 + 1);
+        bitSet.set(18 * 9, true);
         for(int i = 0; i < bitSet.length(); i++)
         {
             if(i < 81)
                 bitSet.set(i, isRed[i / 9][i % 9]);
-            else
+            else if(i < 2 * 81)
                 bitSet.set(i, isBlue[(i-81) / 9][i % 9]);
         }
-        bitSet.set(18 * 9, true);
         String base64 = Base64.encodeToString(bitSet.toByteArray(), Base64.NO_WRAP);
         builder.append(base64);
         return builder.toString();
