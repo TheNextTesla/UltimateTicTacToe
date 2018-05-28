@@ -90,7 +90,7 @@ public class GameMessage
                 blue[tempI / 9][tempI % 9] = bools.get(i);
             }
         }
-        return new UltimateTickTacToeBoard(red, blue, phoneNumber);
+        return new UltimateTickTacToeBoard(blue, red, phoneNumber); //TODO: Umm... is this cheating
     }
 
     /*

@@ -115,15 +115,30 @@ public class GameBackgroundService extends Service implements ListenerSMS
         {
             String messageContents = message.getMessageBody();
             String recipient = message.getOriginatingAddress();
-            String recipientCleaned = recipient.replace("+", "");
-            long phoneNumber = Long.parseLong(recipientCleaned);
+            StringBuilder cleanBuilder = new StringBuilder();
+            for(char character : recipient.toCharArray())
+            {
+                if(Character.isDigit(character))
+                    cleanBuilder.append(character);
+            }
+
+            long phoneNumber = Long.parseLong(cleanBuilder.toString());
+            Log.d(LOG_TAG, "Phone Number: " + phoneNumber);
 
             if(GameMessage.isGameMessage(messageContents))
             {
                 if(instantNotification != null)
                 {
-                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-                    notificationManager.cancel(QUICK_NOTIFICATION_ID);
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    {
+                        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                        nm.cancel(QUICK_NOTIFICATION_ID);
+                    }
+                    else
+                    {
+                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+                        notificationManager.cancel(QUICK_NOTIFICATION_ID);
+                    }
                     instantNotification = null;
                 }
 
@@ -152,6 +167,8 @@ public class GameBackgroundService extends Service implements ListenerSMS
                             .build();
 
                     instantNotification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+                    nm.notify(QUICK_NOTIFICATION_ID, instantNotification);
                 }
                 else
                 {
@@ -164,10 +181,10 @@ public class GameBackgroundService extends Service implements ListenerSMS
                             .build();
 
                     instantNotification.flags |= Notification.FLAG_AUTO_CANCEL;
-                }
 
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-                notificationManager.notify(QUICK_NOTIFICATION_ID, instantNotification);
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+                    notificationManager.notify(QUICK_NOTIFICATION_ID, instantNotification);
+                }
             }
         }
     }
