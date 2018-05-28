@@ -1,11 +1,15 @@
 package independent_study.ultimatetictactoe.util;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.SmsMessage;
@@ -29,6 +33,8 @@ public class GameBackgroundService extends Service implements ListenerSMS
     private static final String BASE_STORAGE_STRING = "Game";
     private static final int ONGOING_NOTIFICATION_ID = 23;
     private static final int QUICK_NOTIFICATION_ID = 32;
+    private static final String ONGOING_CHANNEL_ID = "TicTacToe Persistent Messages";
+    private static final String INSTANT_CHANNEL_ID = "TicTacToe On-Message Notifications";
     private static final String LOG_TAG = "GameBackgroundService";
     public static volatile boolean serviceStarted;
 
@@ -61,13 +67,31 @@ public class GameBackgroundService extends Service implements ListenerSMS
 
         sharedPreferences = getSharedPreferences(PREFERENCES_KEY, MODE_PRIVATE);
 
-        persistentNotification = new Notification.Builder(this.getApplicationContext())
-                .setContentTitle("Ultimate TicTacToe Listener")
-                .setContentText("Waiting for Game Messages")
-                .setSmallIcon(R.drawable.ic_launcher_background)
-                .setPriority(Notification.PRIORITY_LOW)
-                .setContentIntent(pendingIntent)
-                .build();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            NotificationChannel persistentChannel = new NotificationChannel(ONGOING_CHANNEL_ID, "Ongoing Notification", NotificationManager.IMPORTANCE_LOW);
+            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            nm.createNotificationChannel(persistentChannel);
+
+            persistentNotification = new Notification.Builder(this.getApplicationContext())
+                    .setContentTitle("Ultimate TicTacToe Listener")
+                    .setContentText("Waiting for Game Messages")
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setChannelId(ONGOING_CHANNEL_ID)
+                    .setContentIntent(pendingIntent)
+                    .build();
+
+        }
+        else
+        {
+            persistentNotification = new Notification.Builder(this.getApplicationContext())
+                    .setContentTitle("Ultimate TicTacToe Listener")
+                    .setContentText("Waiting for Game Messages")
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setPriority(Notification.PRIORITY_LOW)
+                    .setContentIntent(pendingIntent)
+                    .build();
+        }
 
         loadSavedGames();
         Log.d(LOG_TAG, "onCreate");
@@ -91,7 +115,8 @@ public class GameBackgroundService extends Service implements ListenerSMS
         {
             String messageContents = message.getMessageBody();
             String recipient = message.getOriginatingAddress();
-            long phoneNumber = Long.parseLong(recipient);
+            String recipientCleaned = recipient.replace("+", "");
+            long phoneNumber = Long.parseLong(recipientCleaned);
 
             if(GameMessage.isGameMessage(messageContents))
             {
@@ -110,15 +135,36 @@ public class GameBackgroundService extends Service implements ListenerSMS
                 Intent specificIntent = new Intent(this, GameListActivity.class);
                 PendingIntent specificPendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, specificIntent, 0);
 
-                instantNotification = new Notification.Builder(this.getApplicationContext())
-                        .setContentTitle("Received Game Update!")
-                        .setContentText("Click Here to Play")
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setPriority(Notification.PRIORITY_MAX)
-                        .setContentIntent(specificPendingIntent)
-                        .build();
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                {
+                    NotificationChannel instantChannel = new NotificationChannel(INSTANT_CHANNEL_ID, "Instant Notification", NotificationManager.IMPORTANCE_LOW);
+                    instantChannel.enableLights(true);
+                    instantChannel.setLightColor(Color.BLUE);
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.createNotificationChannel(instantChannel);
 
-                instantNotification.flags |= Notification.FLAG_AUTO_CANCEL;
+                    instantNotification = new Notification.Builder(this.getApplicationContext())
+                            .setContentTitle("Received Game Update!")
+                            .setContentText("Click Here to Play")
+                            .setSmallIcon(R.drawable.ic_launcher_background)
+                            .setContentIntent(specificPendingIntent)
+                            .setChannelId(INSTANT_CHANNEL_ID)
+                            .build();
+
+                    instantNotification.flags |= Notification.FLAG_AUTO_CANCEL;
+                }
+                else
+                {
+                    instantNotification = new Notification.Builder(this.getApplicationContext())
+                            .setContentTitle("Received Game Update!")
+                            .setContentText("Click Here to Play")
+                            .setSmallIcon(R.drawable.ic_launcher_background)
+                            .setPriority(Notification.PRIORITY_MAX)
+                            .setContentIntent(specificPendingIntent)
+                            .build();
+
+                    instantNotification.flags |= Notification.FLAG_AUTO_CANCEL;
+                }
 
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
                 notificationManager.notify(QUICK_NOTIFICATION_ID, instantNotification);
