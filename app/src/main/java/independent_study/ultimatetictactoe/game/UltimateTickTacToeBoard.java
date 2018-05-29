@@ -1,13 +1,18 @@
 package independent_study.ultimatetictactoe.game;
 
+import android.graphics.Paint;
+import android.util.Pair;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class UltimateTickTacToeBoard implements Cloneable
 {
     private static final String BASE_BOOL_STRING_BLUE = "bB";
-    private static final String BASE_BOOL_STRING_RED = "bR";;
+    private static final String BASE_BOOL_STRING_RED = "bR";
     private static final String BASE_PHONE_NUMBER = "p";
+    private static final String BASE_OUTER_LOCATION = "oL";
+    private static final String BASE_INNER_LOCATION = "iL";
 
     public enum BOARD_STATE {RED, BLUE, NONE}
     public enum BOARD_LOCATION
@@ -20,7 +25,8 @@ public class UltimateTickTacToeBoard implements Cloneable
         MR(5),
         BL(6),
         BM(7),
-        BR(8);
+        BR(8),
+        NONE(-1);
 
         private int num;
 
@@ -38,22 +44,27 @@ public class UltimateTickTacToeBoard implements Cloneable
     protected BOARD_STATE[][] boardStates;
     protected long phoneNumber;
 
+    protected Pair<BOARD_LOCATION, BOARD_LOCATION> lastChangedLocation;
+
     public UltimateTickTacToeBoard(long phoneNumber)
     {
         this.phoneNumber = phoneNumber;
         boardStates = new BOARD_STATE[9][9];
         for(int i = 0; i < boardStates.length; i++)
         {
-            for(int j = 0; j < boardStates[0].length; j++)
+            for (int j = 0; j < boardStates[0].length; j++)
             {
                 boardStates[i][j] = BOARD_STATE.NONE;
             }
         }
+        this.lastChangedLocation = new Pair<>(BOARD_LOCATION.NONE, BOARD_LOCATION.NONE);
     }
 
-    public UltimateTickTacToeBoard(boolean[][] isRed, boolean[][] isBlue, long phoneNumber)
+    public UltimateTickTacToeBoard(boolean[][] isRed, boolean[][] isBlue,
+                                   Pair<BOARD_LOCATION, BOARD_LOCATION> lastChangedLocation, long phoneNumber)
     {
         this(phoneNumber);
+        this.lastChangedLocation = lastChangedLocation;
 
         for(int i = 0; i < isRed.length && i < boardStates.length; i++)
         {
@@ -82,6 +93,16 @@ public class UltimateTickTacToeBoard implements Cloneable
     public long getPhoneNumber()
     {
         return phoneNumber;
+    }
+
+    public Pair<BOARD_LOCATION, BOARD_LOCATION> getLastChangedLocation()
+    {
+        return lastChangedLocation;
+    }
+
+    public void setLastChangedLocation(Pair<BOARD_LOCATION,BOARD_LOCATION> locations)
+    {
+        lastChangedLocation = locations;
     }
 
     public boolean[][] getRedBooleanArray()
@@ -128,8 +149,11 @@ public class UltimateTickTacToeBoard implements Cloneable
             }
 
             long phone = json.getLong(BASE_PHONE_NUMBER);
+            BOARD_LOCATION outer = convertToBoardLocation(json.getInt(BASE_OUTER_LOCATION));
+            BOARD_LOCATION inner = convertToBoardLocation(json.getInt(BASE_INNER_LOCATION));
+            Pair<BOARD_LOCATION, BOARD_LOCATION> locations = new Pair<>(outer, inner);
 
-            return new UltimateTickTacToeBoard(redArray, blueArray, phone);
+            return new UltimateTickTacToeBoard(redArray, blueArray, locations, phone);
         }
         catch (JSONException jsonex)
         {
@@ -155,6 +179,8 @@ public class UltimateTickTacToeBoard implements Cloneable
                 }
             }
             json.put(BASE_PHONE_NUMBER, phoneNumber);
+            json.put(BASE_OUTER_LOCATION, lastChangedLocation.first);
+            json.put(BASE_INNER_LOCATION, lastChangedLocation.second);
         }
         catch (JSONException jsonex)
         {
@@ -186,5 +212,28 @@ public class UltimateTickTacToeBoard implements Cloneable
             cnse.printStackTrace();
             return null;
         }
+    }
+
+    public static BOARD_LOCATION convertToBoardLocation(int integer)
+    {
+        if(BOARD_LOCATION.TL.getNum() == integer)
+            return BOARD_LOCATION.TL;
+        if(BOARD_LOCATION.TM.getNum() == integer)
+            return BOARD_LOCATION.TM;
+        if(BOARD_LOCATION.TR.getNum() == integer)
+            return BOARD_LOCATION.TR;
+        if(BOARD_LOCATION.ML.getNum() == integer)
+            return BOARD_LOCATION.ML;
+        if(BOARD_LOCATION.MM.getNum() == integer)
+            return BOARD_LOCATION.MM;
+        if(BOARD_LOCATION.MR.getNum() == integer)
+            return BOARD_LOCATION.MR;
+        if(BOARD_LOCATION.BL.getNum() == integer)
+            return BOARD_LOCATION.BL;
+        if(BOARD_LOCATION.BM.getNum() == integer)
+            return BOARD_LOCATION.BM;
+        if(BOARD_LOCATION.BR.getNum() == integer)
+            return BOARD_LOCATION.BR;
+        return BOARD_LOCATION.NONE;
     }
 }

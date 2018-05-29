@@ -35,6 +35,7 @@ public class TicTacToeView extends View
     private Paint linePaint;
     private Paint redBoxPaint;
     private Paint blueBoxPaint;
+    private Paint greenGlowPaint;
 
     private RectF[][] locationRects;
     private RectF[] magnifiedLocationRects;
@@ -58,6 +59,14 @@ public class TicTacToeView extends View
         redBoxPaint.setStrokeWidth(20);
         blueBoxPaint = new Paint();
         blueBoxPaint.setColor(Color.BLUE);
+        greenGlowPaint = new Paint();
+        int aGreen = 100;
+        int rGreen = 0;
+        int gGreen = 100;
+        int bGreen = 0;
+        int greenColor = (aGreen & 0xff) << 24 | (rGreen & 0xff) << 16 | (gGreen & 0xff) << 8 | (bGreen & 0xff);
+        greenGlowPaint.setColor(greenColor);
+        greenGlowPaint.setStrokeWidth(20);
 
         color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
         isMagnified = false;
@@ -75,6 +84,14 @@ public class TicTacToeView extends View
         redBoxPaint.setStrokeWidth(20);
         blueBoxPaint = new Paint();
         blueBoxPaint.setColor(Color.BLUE);
+        greenGlowPaint = new Paint();
+        int aGreen = 100;
+        int rGreen = 0;
+        int gGreen = 100;
+        int bGreen = 0;
+        int greenColor = (aGreen & 0xff) << 24 | (rGreen & 0xff) << 16 | (gGreen & 0xff) << 8 | (bGreen & 0xff);
+        greenGlowPaint.setColor(greenColor);
+        greenGlowPaint.setStrokeWidth(20);
 
         color = UltimateTickTacToeBoard.BOARD_STATE.NONE;
         isMagnified = false;
@@ -125,6 +142,9 @@ public class TicTacToeView extends View
         }
         else
         {
+            if(board.getLastChangedLocation().second.getNum() != -1)
+                canvas.drawRect(magnifiedLocationRects[board.getLastChangedLocation().second.getNum()], greenGlowPaint);
+
             for(int i = 0; i < locationRects.length; i++)
             {
                 RectF[] rects = locationRects[i];
@@ -259,6 +279,16 @@ public class TicTacToeView extends View
     {
         //TODO: Add Actual Game Logic Here
         return !isMagnified && hasBeenSelected;
+    }
+
+    public UltimateTickTacToeBoard.BOARD_LOCATION getMagnifiedLocation()
+    {
+        return magnifiedLocation;
+    }
+
+    public UltimateTickTacToeBoard.BOARD_LOCATION getSubMagnifiedLocation()
+    {
+        return subMagnifiedLocation;
     }
 
     public void setColor(UltimateTickTacToeBoard.BOARD_STATE color)

@@ -8,6 +8,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 
 import independent_study.ultimatetictactoe.R;
@@ -56,6 +57,10 @@ public class GameActivity extends AppCompatActivity
             {
                 if(ticTacToeView.isValidPieceChoosen())
                 {
+                     Pair<UltimateTickTacToeBoard.BOARD_LOCATION, UltimateTickTacToeBoard.BOARD_LOCATION> locations =
+                             new Pair<>(ticTacToeView.getMagnifiedLocation(), ticTacToeView.getSubMagnifiedLocation());
+
+
                     Log.d(LOG_TAG, board.toString());
                     for(int i = 0; i < 81; i++)
                     {

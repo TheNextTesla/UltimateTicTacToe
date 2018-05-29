@@ -1,13 +1,14 @@
 package independent_study.ultimatetictactoe.game;
 
 import android.util.Base64;
-import android.util.Log;
+import android.util.Pair;
 
 import java.util.BitSet;
 
 public class GameMessage
 {
     private static final String MESSAGE_HEADER = "New TicTacToe Message: ";
+    private static final String MESSAGE_DIVISION = "-";
 
     protected String message;
     protected boolean[][] isRed;
@@ -38,6 +39,9 @@ public class GameMessage
     {
         StringBuilder builder = new StringBuilder();
         builder.append(MESSAGE_HEADER);
+        builder.append(board.getLastChangedLocation().first);
+        builder.append(board.getLastChangedLocation().second);
+        builder.append(MESSAGE_DIVISION);
         BitSet bitSet = new BitSet(18 * 9 + 1);
         bitSet.set(18 * 9, true);
         for(int i = 0; i < bitSet.length(); i++)
@@ -58,24 +62,23 @@ public class GameMessage
             throw new IllegalArgumentException();
 
         String cutMessage = message.replace(MESSAGE_HEADER, "");
-        byte[] rawBytes = Base64.decode(cutMessage, Base64.NO_WRAP);
+        String[] splicedMessage = cutMessage.split(MESSAGE_DIVISION);
+        String preSplice = splicedMessage[0];
+        String postSplice = splicedMessage[1];
+
+        if(preSplice.length() != 2)
+            throw new IllegalArgumentException();
+
+        UltimateTickTacToeBoard.BOARD_LOCATION outer =
+                UltimateTickTacToeBoard.convertToBoardLocation(Character.getNumericValue(preSplice.charAt(0)));
+        UltimateTickTacToeBoard.BOARD_LOCATION inner =
+                UltimateTickTacToeBoard.convertToBoardLocation(Character.getNumericValue(preSplice.charAt(1)));
+        Pair<UltimateTickTacToeBoard.BOARD_LOCATION, UltimateTickTacToeBoard.BOARD_LOCATION>
+                locations = new Pair<>(outer, inner);
+
+        byte[] rawBytes = Base64.decode(postSplice, Base64.NO_WRAP);
         boolean[][] red = new boolean[9][9];
         boolean[][] blue = new boolean[9][9];
-
-        /*
-        for(int i = 0; i < 81 * 2; i++)
-        {
-            if(i < 81)
-            {
-                red[i / 9][i % 9] = getBooleanInByte(rawBytes[i / 8], i % 8);
-            }
-            else if(i < 81 * 2)
-            {
-                int tempI = i - 81;
-                blue[tempI / 9][tempI % 9] = getBooleanInByte(rawBytes[i / 8], i % 8);
-            }
-        }
-        */
 
         BitSet bools = BitSet.valueOf(rawBytes);
         for(int i = 0; i < bools.size(); i++)
@@ -90,7 +93,7 @@ public class GameMessage
                 blue[tempI / 9][tempI % 9] = bools.get(i);
             }
         }
-        return new UltimateTickTacToeBoard(blue, red, phoneNumber); //TODO: Umm... is this cheating
+        return new UltimateTickTacToeBoard(blue, red, locations, phoneNumber); //TODO: Umm... is this cheating
     }
 
     /*
