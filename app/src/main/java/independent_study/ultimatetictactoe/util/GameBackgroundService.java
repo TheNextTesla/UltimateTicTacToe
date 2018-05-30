@@ -127,20 +127,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
 
             if(GameMessage.isGameMessage(messageContents))
             {
-                if(instantNotification != null)
-                {
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    {
-                        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                        nm.cancel(QUICK_NOTIFICATION_ID);
-                    }
-                    else
-                    {
-                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-                        notificationManager.cancel(QUICK_NOTIFICATION_ID);
-                    }
-                    instantNotification = null;
-                }
+                dismissInstantNotification();
 
                 GameMessage gameMessage = new GameMessage(messageContents, phoneNumber);
                 UltimateTickTacToeBoard board = gameMessage.getBoard();
@@ -269,6 +256,24 @@ public class GameBackgroundService extends Service implements ListenerSMS
         catch (Exception ex)
         {
             ex.printStackTrace();
+        }
+    }
+
+    public void dismissInstantNotification()
+    {
+        if(instantNotification != null)
+        {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            {
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                nm.cancel(QUICK_NOTIFICATION_ID);
+            }
+            else
+            {
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+                notificationManager.cancel(QUICK_NOTIFICATION_ID);
+            }
+            instantNotification = null;
         }
     }
 

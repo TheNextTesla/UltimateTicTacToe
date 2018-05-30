@@ -75,6 +75,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
         {
             if(gameSetup != null && !gameSetup.isEmpty())
             {
+                Log.d(LOG_TAG, "Reached to Be Deleted, Bound: " + isBound);
                 toBeDeleted = gameSetup.getString(REMOVE_FROM_LIST_KEY);
             }
             else
@@ -126,7 +127,20 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
                     gameService = binder.getService();
                     gameService.addListener(gameListActivity);
                     isBound = true;
-                    if(toBeDeleted != null);
+
+                    if(toBeDeleted != null)
+                    {
+                        try
+                        {
+                            Log.d(LOG_TAG,"To Be Deleted = " + toBeDeleted);
+                            gameService.removeBoard(UltimateTickTacToeBoard.fromString(toBeDeleted));
+                            toBeDeleted = null;
+                        }
+                        catch (Exception ex)
+                        {
+                            ex.printStackTrace();
+                        }
+                    }
 
                     onGameUpdate(gameService.getBoardsCopy());
                     Log.d(LOG_TAG, "Service Bound!");
@@ -173,7 +187,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
         ArrayList<String> listOutput = new ArrayList<>();
         for(int i = 0; i < boards.size(); i++)
         {
-            listOutput.add(String.format(Locale.US, "Game %d Against %d", i, boards.get(i).getPhoneNumber()));
+            listOutput.add(String.format(Locale.US, "Game #%d Against %d", i, boards.get(i).getPhoneNumber()));
         }
         arrayAdapter.clear();
         arrayAdapter.addAll(listOutput);

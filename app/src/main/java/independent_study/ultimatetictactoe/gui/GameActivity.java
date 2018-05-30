@@ -61,15 +61,6 @@ public class GameActivity extends AppCompatActivity
                     board.setLastChangedLocation(locations);
 
                     Log.d(LOG_TAG, board.toString());
-                    /*
-                    for(int i = 0; i < 81; i++)
-                    {
-                        if(board.getBoardStates()[i / 9][i % 9] == UltimateTickTacToeBoard.BOARD_STATE.RED)
-                        {
-                            Log.d(LOG_TAG, "Red Found !");
-                        }
-                    }
-                    */
                     GameMessage gameMessage = new GameMessage(board);
                     Log.d(LOG_TAG, gameMessage.getMessage());
                     TransmitterSMS.getInstance().sendSMS(gameMessage.getPhoneNumber(), gameMessage.getMessage(), gameActivity);
@@ -90,6 +81,7 @@ public class GameActivity extends AppCompatActivity
                         public void onClick(DialogInterface dialogInterface, int i)
                         {
                             Intent returnIntent = new Intent(getApplicationContext(), GameListActivity.class);
+                            returnIntent.putExtra(GameListActivity.REMOVE_FROM_LIST_KEY, boardCopy.toString());
                             startActivity(returnIntent);
                         }
                     });
