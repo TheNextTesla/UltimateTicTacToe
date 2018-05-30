@@ -2,9 +2,18 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:gradient="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".gui.GameActivity">
+
+    <com.dynamitechetan.flowinggradient.FlowingGradient
+        android:id="@+id/mainGradient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        gradient:transition_duration = "1000000"
+        gradient:transition_drawable="@drawable/trans"
+        />-->
 
     <independent_study.ultimatetictactoe.gui.TicTacToeView
         android:id="@+id/ticTacToeView"

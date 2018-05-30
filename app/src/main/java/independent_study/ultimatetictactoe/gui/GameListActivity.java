@@ -24,6 +24,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.skyfishjy.library.RippleBackground;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -46,6 +48,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
     private ListView listView;
     private FloatingActionButton fab;
     private ArrayAdapter<String> arrayAdapter;
+    private RippleBackground rippleBackground;
 
     private GameListActivity gameListActivity;
     private GameBackgroundService gameService;
@@ -61,6 +64,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
         setContentView(R.layout.activity_game_list);
 
         gameListActivity = this;
+        rippleBackground = findViewById(R.id.rippleView);
         listView = findViewById(R.id.listViewList);
         fab = findViewById(R.id.floatingActionButtonList);
         arrayAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, android.R.id.text1);
@@ -146,6 +150,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
                         }
                     }
 
+                    startRipple();
                     onGameUpdate(gameService.getBoardsCopy());
                     Log.d(LOG_TAG, "Service Bound!");
                 }
@@ -166,6 +171,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
     {
         super.onResume();
         checkAndCallPermissions();
+        startRipple();
     }
 
     @Override
@@ -178,6 +184,7 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
     protected void onStop()
     {
         super.onStop();
+        stopRipple();
         if(isBound)
         {
             gameService.removeListener(this);
@@ -210,15 +217,6 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
         }
         else
         {
-            /*
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            {
-                BroadcastReceiverSMS smsReceiver = BroadcastReceiverSMS.getInstance();
-                IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-                intentFilter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
-                this.registerReceiver(smsReceiver, intentFilter);
-            }
-            */
             return true;
         }
     }
@@ -248,5 +246,17 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
         {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    private void startRipple()
+    {
+        if(!rippleBackground.isRippleAnimationRunning())
+            rippleBackground.startRippleAnimation();
+    }
+
+    private void stopRipple()
+    {
+        if(rippleBackground.isRippleAnimationRunning())
+            rippleBackground.stopRippleAnimation();
     }
 }
