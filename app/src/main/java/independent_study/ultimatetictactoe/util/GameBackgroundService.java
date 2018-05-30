@@ -6,11 +6,14 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.provider.Telephony;
 import android.support.v4.app.NotificationManagerCompat;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -104,6 +107,15 @@ public class GameBackgroundService extends Service implements ListenerSMS
     {
         super.onStartCommand(intent, flags, startId);
         receiverSMS = BroadcastReceiverSMS.getInstance();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.setPriority(2147483647);
+            intentFilter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+            this.registerReceiver(receiverSMS, intentFilter);
+        }
+
         receiverSMS.addListener(this);
         return Service.START_STICKY;
     }
@@ -198,6 +210,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
     public void onDestroy()
     {
         receiverSMS.removeListener(this);
+        this.unregisterReceiver(receiverSMS);
         removeAllListeners();
         saveLocalGames();
         super.onDestroy();

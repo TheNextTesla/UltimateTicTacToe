@@ -4,10 +4,14 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.IBinder;
+import android.provider.Telephony;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -205,6 +209,15 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
         }
         else
         {
+            /*
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            {
+                BroadcastReceiverSMS smsReceiver = BroadcastReceiverSMS.getInstance();
+                IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+                intentFilter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+                this.registerReceiver(smsReceiver, intentFilter);
+            }
+            */
             return true;
         }
     }

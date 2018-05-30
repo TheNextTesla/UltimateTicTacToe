@@ -1,6 +1,5 @@
 package independent_study.ultimatetictactoe.game;
 
-import android.graphics.Paint;
 import android.util.Log;
 import android.util.Pair;
 
@@ -282,6 +281,40 @@ public class UltimateTickTacToeBoard implements Cloneable
             cnse.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public boolean equals(Object board)
+    {
+        if(!(board instanceof UltimateTickTacToeBoard))
+            return false;
+
+        UltimateTickTacToeBoard tickTacToeBoard = (UltimateTickTacToeBoard) board;
+
+        BOARD_STATE[][] otherStates = tickTacToeBoard.getBoardStates();
+        BOARD_STATE[][] thisStates = this.getBoardStates();
+
+        for(int i = 0; i < otherStates.length; i++)
+        {
+            for(int j = 0; j < otherStates[i].length; j++)
+            {
+                if(otherStates[i][j] != thisStates[i][j])
+                {
+                    return false;
+                }
+            }
+        }
+
+        if(this.getPhoneNumber() != tickTacToeBoard.getPhoneNumber())
+            return false;
+
+        if(this.getLastChangedLocation().first != tickTacToeBoard.getLastChangedLocation().first)
+            return false;
+
+        if(this.getLastChangedLocation().second != tickTacToeBoard.getLastChangedLocation().second)
+            return false;
+
+        return true;
     }
 
     public static BOARD_LOCATION convertToBoardLocation(int integer)
