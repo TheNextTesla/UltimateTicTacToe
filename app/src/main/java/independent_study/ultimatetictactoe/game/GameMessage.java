@@ -96,19 +96,6 @@ public class GameMessage
         return new UltimateTickTacToeBoard(blue, red, locations, phoneNumber); //TODO: Umm... is this cheating
     }
 
-    /*
-    private boolean getBooleanInByte(byte source, int position)
-    {
-        return ((source >> position) & 1) == 1;
-    }
-
-    private byte makeByteOfBoolean(boolean... booleans)
-    {
-        byte tempByte = 0;
-
-    }
-    */
-
     public UltimateTickTacToeBoard getBoard()
     {
         return board;

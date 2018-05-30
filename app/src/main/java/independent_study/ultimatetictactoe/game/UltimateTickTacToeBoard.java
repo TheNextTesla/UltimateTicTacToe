@@ -122,7 +122,7 @@ public class UltimateTickTacToeBoard implements Cloneable
             if(boardStates[locations.first.getNum()][locations.second.getNum()] == BOARD_STATE.NONE)
             {
                 //Is Placing In An Incomplete Section
-                BOARD_STATE[] selectedStates = boardStates[lastChangedLocation.first.getNum()];
+                BOARD_STATE[] selectedStates = boardStates[locations.first.getNum()];
                 if(evaluateBoardComponentForWinner(selectedStates) == BOARD_STATE.NONE)
                 {
                     return true;
@@ -143,22 +143,22 @@ public class UltimateTickTacToeBoard implements Cloneable
         //Horizontal
         for(int i = 0; i < 3; i++)
         {
-            if(states[i] == states[i + 1] && states[i + 1] == states[i + 2])
+            if(states[i] == states[i + 1] && states[i + 1] == states[i + 2] && states[i] != BOARD_STATE.NONE)
                 return states[i];
         }
 
         //Vertical
         for(int j = 0; j < 3; j++)
         {
-            if(states[j] == states[j + 3] && states[j + 3] == states[j + 6])
+            if(states[j] == states[j + 3] && states[j + 3] == states[j + 6] && states[j] != BOARD_STATE.NONE)
                 return states[j];
         }
 
         //Diagonal
-        if(states[0] == states[4] && states[4] == states[8])
-            return states[0];
-        if(states[2] == states[4] && states[4] == states[6])
-            return states[0];
+        if(states[0] == states[4] && states[4] == states[8] && states[4] != BOARD_STATE.NONE)
+            return states[4];
+        if(states[2] == states[4] && states[4] == states[6] && states[4] != BOARD_STATE.NONE)
+            return states[4];
 
         return BOARD_STATE.NONE;
     }

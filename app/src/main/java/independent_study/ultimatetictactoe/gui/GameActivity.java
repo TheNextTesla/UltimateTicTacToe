@@ -54,7 +54,40 @@ public class GameActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-                if(ticTacToeView.isValidPieceChoosen())
+                if(board.evaluateIsGameWon() != UltimateTickTacToeBoard.BOARD_STATE.NONE)
+                {
+                    AlertDialog.Builder builder;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                    {
+                        builder = new AlertDialog.Builder(gameActivity, android.R.style.Theme_Material_Dialog_Alert);
+                    }
+                    else
+                    {
+                        builder = new AlertDialog.Builder(gameActivity);
+                    }
+                    if(board.evaluateIsGameWon() == UltimateTickTacToeBoard.BOARD_STATE.BLUE)
+                        builder.setTitle("You Have Lost...");
+                    else
+                    {
+                        GameMessage gameMessage = new GameMessage(board);
+                        builder.setTitle("You Have Won!");
+                        TransmitterSMS.getInstance().sendSMS(gameMessage.getPhoneNumber(), gameMessage.getMessage(), gameActivity);
+                    }
+
+                    builder.setIcon(android.R.drawable.ic_dialog_alert);
+                    builder.setNeutralButton("OK", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i)
+                        {
+                            Intent returnIntent = new Intent(getApplicationContext(), GameListActivity.class);
+                            returnIntent.putExtra(GameListActivity.REMOVE_FROM_LIST_KEY, boardCopy.toString());
+                            startActivity(returnIntent);
+                        }
+                    });
+                    builder.show();
+                }
+                else if(ticTacToeView.isValidPieceChoosen())
                 {
                     Pair<UltimateTickTacToeBoard.BOARD_LOCATION, UltimateTickTacToeBoard.BOARD_LOCATION> locations =
                              new Pair<>(ticTacToeView.getMagnifiedLocation(), ticTacToeView.getSubMagnifiedLocation());
