@@ -45,7 +45,6 @@ public class GameActivity extends AppCompatActivity
         ticTacToeView = findViewById(R.id.ticTacToeView);
         fabGo = findViewById(R.id.floatingActionButtonGameSend);
         fabReset = findViewById(R.id.floatingActionButtonGameClear);
-        //TODO: Replace Next Line When Color is Cleared Up
         ticTacToeView.setColor(UltimateTickTacToeBoard.BOARD_STATE.RED);
         ticTacToeView.setBoard(board);
         ticTacToeView.invalidate();
@@ -57,11 +56,12 @@ public class GameActivity extends AppCompatActivity
             {
                 if(ticTacToeView.isValidPieceChoosen())
                 {
-                     Pair<UltimateTickTacToeBoard.BOARD_LOCATION, UltimateTickTacToeBoard.BOARD_LOCATION> locations =
+                    Pair<UltimateTickTacToeBoard.BOARD_LOCATION, UltimateTickTacToeBoard.BOARD_LOCATION> locations =
                              new Pair<>(ticTacToeView.getMagnifiedLocation(), ticTacToeView.getSubMagnifiedLocation());
-
+                    board.setLastChangedLocation(locations);
 
                     Log.d(LOG_TAG, board.toString());
+                    /*
                     for(int i = 0; i < 81; i++)
                     {
                         if(board.getBoardStates()[i / 9][i % 9] == UltimateTickTacToeBoard.BOARD_STATE.RED)
@@ -69,6 +69,7 @@ public class GameActivity extends AppCompatActivity
                             Log.d(LOG_TAG, "Red Found !");
                         }
                     }
+                    */
                     GameMessage gameMessage = new GameMessage(board);
                     Log.d(LOG_TAG, gameMessage.getMessage());
                     TransmitterSMS.getInstance().sendSMS(gameMessage.getPhoneNumber(), gameMessage.getMessage(), gameActivity);

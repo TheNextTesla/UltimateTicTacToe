@@ -39,8 +39,8 @@ public class GameMessage
     {
         StringBuilder builder = new StringBuilder();
         builder.append(MESSAGE_HEADER);
-        builder.append(board.getLastChangedLocation().first);
-        builder.append(board.getLastChangedLocation().second);
+        builder.append(board.getLastChangedLocation().first.getNum());
+        builder.append(board.getLastChangedLocation().second.getNum());
         builder.append(MESSAGE_DIVISION);
         BitSet bitSet = new BitSet(18 * 9 + 1);
         bitSet.set(18 * 9, true);

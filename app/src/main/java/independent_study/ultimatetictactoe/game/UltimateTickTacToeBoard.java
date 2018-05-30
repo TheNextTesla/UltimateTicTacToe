@@ -1,6 +1,7 @@
 package independent_study.ultimatetictactoe.game;
 
 import android.graphics.Paint;
+import android.util.Log;
 import android.util.Pair;
 
 import org.json.JSONException;
@@ -13,6 +14,7 @@ public class UltimateTickTacToeBoard implements Cloneable
     private static final String BASE_PHONE_NUMBER = "p";
     private static final String BASE_OUTER_LOCATION = "oL";
     private static final String BASE_INNER_LOCATION = "iL";
+    private static final String LOG_TAG = "Board";
 
     public enum BOARD_STATE {RED, BLUE, NONE}
     public enum BOARD_LOCATION
@@ -26,7 +28,7 @@ public class UltimateTickTacToeBoard implements Cloneable
         BL(6),
         BM(7),
         BR(8),
-        NONE(-1);
+        NONE(9);
 
         private int num;
 
@@ -105,6 +107,73 @@ public class UltimateTickTacToeBoard implements Cloneable
         lastChangedLocation = locations;
     }
 
+    public boolean evaluateMoveValidity(Pair<BOARD_LOCATION,BOARD_LOCATION> locations)
+    {
+        //If this is the first round, always true
+        if(lastChangedLocation.second == BOARD_LOCATION.NONE)
+            return true;
+
+        BOARD_STATE[] regionStates = boardStates[lastChangedLocation.second.getNum()];
+
+        //Has Selected in the Correct Region
+        if(locations.first == lastChangedLocation.second
+                || evaluateBoardComponentForWinner(regionStates) != BOARD_STATE.NONE)
+        {
+            //Has Selected a Location that Is Not Already Taken
+            if(boardStates[locations.first.getNum()][locations.second.getNum()] == BOARD_STATE.NONE)
+            {
+                //Is Placing In An Incomplete Section
+                BOARD_STATE[] selectedStates = boardStates[lastChangedLocation.first.getNum()];
+                if(evaluateBoardComponentForWinner(selectedStates) == BOARD_STATE.NONE)
+                {
+                    return true;
+                }
+                else
+                    Log.d(LOG_TAG, "In a Region Already Won");
+            }
+            else
+                Log.d(LOG_TAG, "In a Location Already Taken");
+        }
+        else
+            Log.d(LOG_TAG, "Not in a Valid Region");
+        return false;
+    }
+
+    public BOARD_STATE evaluateBoardComponentForWinner(BOARD_STATE[] states)
+    {
+        //Horizontal
+        for(int i = 0; i < 3; i++)
+        {
+            if(states[i] == states[i + 1] && states[i + 1] == states[i + 2])
+                return states[i];
+        }
+
+        //Vertical
+        for(int j = 0; j < 3; j++)
+        {
+            if(states[j] == states[j + 3] && states[j + 3] == states[j + 6])
+                return states[j];
+        }
+
+        //Diagonal
+        if(states[0] == states[4] && states[4] == states[8])
+            return states[0];
+        if(states[2] == states[4] && states[4] == states[6])
+            return states[0];
+
+        return BOARD_STATE.NONE;
+    }
+
+    public BOARD_STATE evaluateIsGameWon()
+    {
+        BOARD_STATE[] regionalBoardStates = new BOARD_STATE[9];
+        for(int i = 0; i < regionalBoardStates.length; i++)
+        {
+            regionalBoardStates[i] = evaluateBoardComponentForWinner(boardStates[i]);
+        }
+        return evaluateBoardComponentForWinner(regionalBoardStates);
+    }
+
     public boolean[][] getRedBooleanArray()
     {
         boolean[][] redArray = new boolean[9][9];
@@ -179,8 +248,8 @@ public class UltimateTickTacToeBoard implements Cloneable
                 }
             }
             json.put(BASE_PHONE_NUMBER, phoneNumber);
-            json.put(BASE_OUTER_LOCATION, lastChangedLocation.first);
-            json.put(BASE_INNER_LOCATION, lastChangedLocation.second);
+            json.put(BASE_OUTER_LOCATION, lastChangedLocation.first.getNum());
+            json.put(BASE_INNER_LOCATION, lastChangedLocation.second.getNum());
         }
         catch (JSONException jsonex)
         {
@@ -205,6 +274,7 @@ public class UltimateTickTacToeBoard implements Cloneable
                     board.boardStates[i][j] = this.boardStates[i][j];
                 }
             }
+            board.lastChangedLocation = this.lastChangedLocation;
             return board;
         }
         catch (CloneNotSupportedException cnse)

@@ -62,7 +62,7 @@ public class GameBackgroundService extends Service implements ListenerSMS
         serviceStarted = true;
 
         binder = new GameBackgroundBinder();
-        Intent directIntent = new Intent(this, GameActivity.class);
+        Intent directIntent = new Intent(this, GameListActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, directIntent, 0);
 
         sharedPreferences = getSharedPreferences(PREFERENCES_KEY, MODE_PRIVATE);

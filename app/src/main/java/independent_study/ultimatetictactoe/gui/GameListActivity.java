@@ -35,6 +35,7 @@ import static independent_study.ultimatetictactoe.gui.GameActivity.BOARD_TAG;
 
 public class GameListActivity extends AppCompatActivity implements ListenerGameUpdate
 {
+    public static final String REMOVE_FROM_LIST_KEY = "rem";
     private static final int PERMISSIONS_KEY = 34809;
     private static final String LOG_TAG = "GameListActivity";
 
@@ -46,6 +47,8 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
     private GameBackgroundService gameService;
     private ServiceConnection serviceConnection;
     private boolean isBound;
+
+    private String toBeDeleted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -65,6 +68,23 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
         {
             Intent serviceIntent = new Intent(getApplicationContext(), GameBackgroundService.class);
             getApplication().startService(serviceIntent);
+        }
+
+        Bundle gameSetup = getIntent().getExtras();
+        try
+        {
+            if(gameSetup != null && !gameSetup.isEmpty())
+            {
+                toBeDeleted = gameSetup.getString(REMOVE_FROM_LIST_KEY);
+            }
+            else
+            {
+                toBeDeleted = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
         }
 
         listView.setAdapter(arrayAdapter);
@@ -106,6 +126,8 @@ public class GameListActivity extends AppCompatActivity implements ListenerGameU
                     gameService = binder.getService();
                     gameService.addListener(gameListActivity);
                     isBound = true;
+                    if(toBeDeleted != null);
+
                     onGameUpdate(gameService.getBoardsCopy());
                     Log.d(LOG_TAG, "Service Bound!");
                 }

@@ -12,8 +12,10 @@ import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import independent_study.ultimatetictactoe.R;
 import independent_study.ultimatetictactoe.game.UltimateTickTacToeBoard;
@@ -142,9 +144,6 @@ public class TicTacToeView extends View
         }
         else
         {
-            if(board.getLastChangedLocation().second.getNum() != -1)
-                canvas.drawRect(magnifiedLocationRects[board.getLastChangedLocation().second.getNum()], greenGlowPaint);
-
             for(int i = 0; i < locationRects.length; i++)
             {
                 RectF[] rects = locationRects[i];
@@ -161,7 +160,11 @@ public class TicTacToeView extends View
                     }
                 }
             }
+
+            if(board.getLastChangedLocation().second.getNum() != 9)
+                canvas.drawRect(magnifiedLocationRects[board.getLastChangedLocation().second.getNum()], greenGlowPaint);
         }
+        //canvas.drawRect(magnifiedLocationRects[1], greenGlowPaint);
     }
 
     @Override
@@ -242,8 +245,8 @@ public class TicTacToeView extends View
         {
             for(int j = 0; j < 3; j++)
             {
-                magnifiedLocationRects[i * 3 + j] = new RectF(f(i * blockMultiplier) * getWidth(), f(j * blockMultiplier) * getHeight(),
-                        f((i + 1) * blockMultiplier) * getWidth(), f((j + 1) * blockMultiplier) * getHeight());
+                magnifiedLocationRects[i * 3 + j] = new RectF(f(j * blockMultiplier) * getWidth(), f(i * blockMultiplier) * getHeight(),
+                        f((j + 1) * blockMultiplier) * getWidth(), f((i + 1) * blockMultiplier) * getHeight());
             }
         }
     }
@@ -268,16 +271,28 @@ public class TicTacToeView extends View
     {
         if(!hasBeenSelected)
         {
-            subMagnifiedLocation = location;
-            board.getBoardStates()[magnifiedLocation.getNum()][location.getNum()] = color;
-            hasBeenSelected = true;
-            isMagnified = false;
+            Pair<UltimateTickTacToeBoard.BOARD_LOCATION,UltimateTickTacToeBoard.BOARD_LOCATION> pair =
+                    new Pair<>(magnifiedLocation, location);
+            if(board.evaluateMoveValidity(pair))
+            {
+                hasBeenSelected = true;
+                isMagnified = false;
+                subMagnifiedLocation = location;
+                board.getBoardStates()[magnifiedLocation.getNum()][location.getNum()] = color;
+
+                if(board.evaluateIsGameWon() == UltimateTickTacToeBoard.BOARD_STATE.RED)
+                    Toast.makeText(this.getContext(), "You Have Won!", Toast.LENGTH_LONG).show();
+                else if(board.evaluateIsGameWon() == UltimateTickTacToeBoard.BOARD_STATE.BLUE)
+                    Toast.makeText(this.getContext(), "You Have Lost...", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
+
+        Toast.makeText(this.getContext(), "Improper Selection", Toast.LENGTH_SHORT).show();
     }
 
     public boolean isValidPieceChoosen()
     {
-        //TODO: Add Actual Game Logic Here
         return !isMagnified && hasBeenSelected;
     }
 
